@@ -120,6 +120,12 @@ impl DialogInner {
     }
 
     #[inline]
+    unsafe fn set_client_guid(&self, guid: &GUID) -> Result<()> {
+        let (d, v) = self.fd();
+        wrap_err((v.SetClientGuid)(d, guid))
+    }
+
+    #[inline]
     unsafe fn set_folder(&self, folder: &IShellItem) -> Result<()> {
         let (d, v) = self.fd();
         wrap_err((v.SetFolder)(d, folder.0.cast()))
@@ -296,6 +302,32 @@ impl IDialog {
         Ok(())
     }
 
+    fn set_dialog_id(&self, id: &Option<String>) -> Result<()> {
+        if let Some(id) = id {
+            use std::collections::hash_map::DefaultHasher;
+            use std::hash::{Hash, Hasher};
+
+            let mut h1 = DefaultHasher::new();
+            id.hash(&mut h1);
+            let hash1 = h1.finish();
+
+            let mut h2 = DefaultHasher::new();
+            "rfd-dialog-id-salt".hash(&mut h2);
+            id.hash(&mut h2);
+            let hash2 = h2.finish();
+
+            let mut bytes = [0u8; 16];
+            bytes[..8].copy_from_slice(&hash1.to_le_bytes());
+            bytes[8..].copy_from_slice(&hash2.to_le_bytes());
+
+            let guid = GUID::from_u128(u128::from_le_bytes(bytes));
+            unsafe {
+                self.0.set_client_guid(&guid)?;
+            }
+        }
+        Ok(())
+    }
+
     pub fn get_results(&self) -> Result<Vec<PathBuf>> {
         unsafe { self.0.get_results() }
     }
@@ -313,6 +345,7 @@ impl IDialog {
     pub fn build_pick_file(opt: &FileDialog) -> Result<Self> {
         let dialog = IDialog::new_open_dialog(opt)?;
 
+        dialog.set_dialog_id(&opt.dialog_id)?;
         dialog.add_filters(&opt.filters)?;
         dialog.set_path(&opt.starting_directory)?;
         dialog.set_file_name(&opt.file_name)?;
@@ -325,6 +358,7 @@ impl IDialog {
     pub fn build_save_file(opt: &FileDialog) -> Result<Self> {
         let dialog = IDialog::new_save_dialog(opt)?;
 
+        dialog.set_dialog_id(&opt.dialog_id)?;
         dialog.add_filters(&opt.filters)?;
         dialog.set_path(&opt.starting_directory)?;
         dialog.set_file_name(&opt.file_name)?;
@@ -337,6 +371,7 @@ impl IDialog {
     pub fn build_pick_folder(opt: &FileDialog) -> Result<Self> {
         let dialog = IDialog::new_open_dialog(opt)?;
 
+        dialog.set_dialog_id(&opt.dialog_id)?;
         dialog.set_path(&opt.starting_directory)?;
         dialog.set_title(&opt.title)?;
 
@@ -355,6 +390,7 @@ impl IDialog {
     pub fn build_pick_folders(opt: &FileDialog) -> Result<Self> {
         let dialog = IDialog::new_open_dialog(opt)?;
 
+        dialog.set_dialog_id(&opt.dialog_id)?;
         dialog.set_path(&opt.starting_directory)?;
         dialog.set_title(&opt.title)?;
 
@@ -373,6 +409,7 @@ impl IDialog {
     pub fn build_pick_files(opt: &FileDialog) -> Result<Self> {
         let dialog = IDialog::new_open_dialog(opt)?;
 
+        dialog.set_dialog_id(&opt.dialog_id)?;
         dialog.add_filters(&opt.filters)?;
         dialog.set_path(&opt.starting_directory)?;
         dialog.set_file_name(&opt.file_name)?;

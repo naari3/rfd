@@ -219,7 +219,7 @@ pub(super) struct IFileDialogV {
     pub(super) SetDefaultExtension:
         unsafe extern "system" fn(this: *mut c_void, pszdefaultextension: PCWSTR) -> HRESULT,
     Close: unsafe extern "system" fn(this: *mut c_void, hr: HRESULT) -> HRESULT,
-    SetClientGuid: unsafe extern "system" fn(this: *mut c_void, guid: *const GUID) -> HRESULT,
+    pub(super) SetClientGuid: unsafe extern "system" fn(this: *mut c_void, guid: *const GUID) -> HRESULT,
     ClearClientData: unsafe extern "system" fn(this: *mut c_void) -> HRESULT,
     SetFilter: unsafe extern "system" fn(this: *mut c_void, pfilter: *mut c_void) -> HRESULT,
 }

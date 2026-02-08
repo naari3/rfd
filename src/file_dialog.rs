@@ -26,6 +26,7 @@ pub struct FileDialog {
     pub(crate) parent_display: Option<RawDisplayHandle>,
     pub(crate) can_create_directories: Option<bool>,
     pub(crate) show_hidden_files: Option<bool>,
+    pub(crate) dialog_id: Option<String>,
 }
 
 // Oh god, I don't like sending RawWindowHandle between threads but here we go anyways...
@@ -117,6 +118,16 @@ impl FileDialog {
     ///  * Linux (GTK3 only, not XDG Portal)
     pub fn set_show_hidden_files(mut self, show: bool) -> Self {
         self.show_hidden_files = Some(show);
+        self
+    }
+
+    /// Set a unique identifier for this dialog so the OS remembers its state
+    /// (e.g. last visited directory) separately from other dialogs.
+    /// Supported platforms:
+    ///  * Windows (via `IFileDialog::SetClientGuid`)
+    ///  * Mac (via `NSSavePanel.identifier`)
+    pub fn set_dialog_id(mut self, id: impl Into<String>) -> Self {
+        self.dialog_id = Some(id.into());
         self
     }
 }
@@ -271,6 +282,16 @@ impl AsyncFileDialog {
     ///  * Linux (GTK3 only, not XDG Portal)
     pub fn set_show_hidden_files(mut self, show: bool) -> Self {
         self.file_dialog = self.file_dialog.set_show_hidden_files(show);
+        self
+    }
+
+    /// Set a unique identifier for this dialog so the OS remembers its state
+    /// (e.g. last visited directory) separately from other dialogs.
+    /// Supported platforms:
+    ///  * Windows (via `IFileDialog::SetClientGuid`)
+    ///  * Mac (via `NSSavePanel.identifier`)
+    pub fn set_dialog_id(mut self, id: impl Into<String>) -> Self {
+        self.file_dialog = self.file_dialog.set_dialog_id(id);
         self
     }
 }

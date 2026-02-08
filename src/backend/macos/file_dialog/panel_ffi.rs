@@ -153,6 +153,13 @@ trait PanelExt {
     fn set_title(&self, title: &str) {
         unsafe { self.panel().setMessage(Some(&NSString::from_str(title))) }
     }
+
+    fn set_identifier(&self, identifier: &str) {
+        unsafe {
+            self.panel()
+                .setIdentifier(Some(&NSString::from_str(identifier)))
+        }
+    }
 }
 
 impl PanelExt for Retained<NSSavePanel> {
@@ -170,6 +177,10 @@ impl PanelExt for Retained<NSOpenPanel> {
 impl Panel {
     pub fn build_pick_file(opt: &FileDialog, mtm: MainThreadMarker) -> Self {
         let panel = unsafe { NSOpenPanel::openPanel(mtm) };
+
+        if let Some(id) = &opt.dialog_id {
+            panel.set_identifier(id);
+        }
 
         if !opt.filters.is_empty() {
             panel.add_filters(opt);
@@ -204,6 +215,10 @@ impl Panel {
     pub fn build_save_file(opt: &FileDialog, mtm: MainThreadMarker) -> Self {
         let panel = unsafe { NSSavePanel::savePanel(mtm) };
 
+        if let Some(id) = &opt.dialog_id {
+            panel.set_identifier(id);
+        }
+
         if !opt.filters.is_empty() {
             panel.add_filters(opt);
         }
@@ -234,6 +249,10 @@ impl Panel {
     pub fn build_pick_folder(opt: &FileDialog, mtm: MainThreadMarker) -> Self {
         let panel = unsafe { NSOpenPanel::openPanel(mtm) };
 
+        if let Some(id) = &opt.dialog_id {
+            panel.set_identifier(id);
+        }
+
         if let Some(path) = &opt.starting_directory {
             panel.set_path(path, opt.file_name.as_deref());
         }
@@ -257,6 +276,10 @@ impl Panel {
 
     pub fn build_pick_folders(opt: &FileDialog, mtm: MainThreadMarker) -> Self {
         let panel = unsafe { NSOpenPanel::openPanel(mtm) };
+
+        if let Some(id) = &opt.dialog_id {
+            panel.set_identifier(id);
+        }
 
         if let Some(path) = &opt.starting_directory {
             panel.set_path(path, opt.file_name.as_deref());
@@ -282,6 +305,10 @@ impl Panel {
 
     pub fn build_pick_files(opt: &FileDialog, mtm: MainThreadMarker) -> Self {
         let panel = unsafe { NSOpenPanel::openPanel(mtm) };
+
+        if let Some(id) = &opt.dialog_id {
+            panel.set_identifier(id);
+        }
 
         if !opt.filters.is_empty() {
             panel.add_filters(opt);
@@ -313,6 +340,10 @@ impl Panel {
     pub fn build_pick_file_or_folder(opt: &FileDialog, mtm: MainThreadMarker) -> Self {
         let panel = unsafe { NSOpenPanel::openPanel(mtm) };
 
+        if let Some(id) = &opt.dialog_id {
+            panel.set_identifier(id);
+        }
+
         if !opt.filters.is_empty() {
             panel.add_filters(opt);
         }
@@ -341,6 +372,10 @@ impl Panel {
 
     pub fn build_pick_files_or_folders(opt: &FileDialog, mtm: MainThreadMarker) -> Self {
         let panel = unsafe { NSOpenPanel::openPanel(mtm) };
+
+        if let Some(id) = &opt.dialog_id {
+            panel.set_identifier(id);
+        }
 
         if !opt.filters.is_empty() {
             panel.add_filters(opt);
